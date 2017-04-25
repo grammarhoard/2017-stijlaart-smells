@@ -19,7 +19,7 @@ import smells::Duplication;
 import smells::ImproperResponsibility;
 import smells::MixedDefinitions;
 import smells::LegacyStructures;
-
+import smells::EntryPoint;
 
 void run() {
 	x = Input::extractedGrammarLocationsInDir(|project://grammarsmells/input/zoo|);
@@ -29,7 +29,7 @@ void run() {
 		GGrammar theGrammar = readBGF(y);
 		grammar(n,p,s) = theGrammar;
 		
-		set[LegacyUsage] result = smells::LegacyStructures::violations(theGrammar);
+		set[str] result = smells::EntryPoint::violations(theGrammar);
 		if (size(result) > 0) {
 			iprintln(result);
 			//return;
