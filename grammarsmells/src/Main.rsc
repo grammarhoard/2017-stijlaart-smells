@@ -20,20 +20,27 @@ import smells::ImproperResponsibility;
 import smells::MixedDefinitions;
 import smells::LegacyStructures;
 import smells::EntryPoint;
+import smells::MixedTop;
+import smells::DisconnectedNonterminalGraph;
 
 void run() {
 	x = Input::extractedGrammarLocationsInDir(|project://grammarsmells/input/zoo|);
 		
 	for (loc y <- drop(0, x)) {
-		iprintln(y);
 		GGrammar theGrammar = readBGF(y);
+		iprintln(y);
 		grammar(n,p,s) = theGrammar;
 		
-		set[str] result = smells::EntryPoint::violations(theGrammar);
-		if (size(result) > 0) {
-			iprintln(result);
+		//set[str] a = smells::MixedTop::violations(theGrammar);
+		//set[str] b = smells::EntryPoint::violations(theGrammar);
+		set[str] result = smells::DisconnectedNonterminalGraph::violations(theGrammar);
+		//iprintln(c);
+		//iprintln(b);
+		iprintln(result);
+		//if (size(result) > 0) {
+			//iprintln(result);
 			//return;
-		}
+		//}
 		//return;
 	}
 }

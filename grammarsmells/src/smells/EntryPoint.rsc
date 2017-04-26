@@ -13,10 +13,6 @@ import List;
 
 
 set[str] violations(GGrammar theGrammar:grammar(ns,ps,ss)) {
-	rel[str,str] r = nonterminalReferences(theGrammar);
-	set[str] setNs = toSet(ns);
-	set[str] referred = range(r);
-	set[str] tops = setNs - referred;
-	set[str] emptySet = {};
-	return size(tops) == 1 ? emptySet : (isEmpty(tops) ? setNs : tops);
+	set[str] tops = grammarTops(theGrammar);
+	return size(tops) == 1 ? {} : (isEmpty(tops) ? toSet(ns) : tops);
 }

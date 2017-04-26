@@ -5,7 +5,7 @@ import IO;
 import Set;
 import Relation;
 import Map::Extra;
-
+import List;
 
 data ExpressionOccurence
 	= fullExpr(GExpr expr2)
@@ -98,3 +98,8 @@ rel[str,str] nonterminalReferences(GGrammar theGrammar ) {
 
 list[str] orderedLhs(grammar(_,ps,_)) =
 	[ lhs | production(lhs,_) <- ps];
+	
+set[str] grammarTops(GGrammar theGrammar:grammar(ns,ps,ss)) {
+	rel[str,str] r = nonterminalReferences(theGrammar);
+	return toSet(ns) - range(r);
+}
