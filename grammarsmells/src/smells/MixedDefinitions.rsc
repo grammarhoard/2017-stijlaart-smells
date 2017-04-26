@@ -17,8 +17,7 @@ data DefinitionDirection
 	;
 
 
-set[DefinitionDirection] definitionStyles(GGrammar g) {
-	grammar(ns, ps, _) = g;
+set[DefinitionDirection] definitionStyles(GGrammar g:grammar(ns, ps, _)) {
 	map[str,set[GProd]] index = nonterminalProdMap(g);
 	
 	set[str] horizontals = { k | k <- index, anyHorizontal(index[k])};
@@ -40,4 +39,4 @@ bool anyHorizontal(set[GProd] items) =
 	any(i <- items, horizontal(i));
 
 bool horizontal(production(lhs, rhs)) =
-	(choice(xs) := rhs);
+	choice(xs) := rhs;

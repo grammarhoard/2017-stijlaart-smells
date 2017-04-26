@@ -11,17 +11,14 @@ alias ReferenceDistanceInfo =
 	tuple[lrel[GProd,int],int]
 	;
 	 
-ReferenceDistanceInfo referenceDistances(GGrammar theGrammar) {
-	//TODO Ask how to resolve this, direct match in parameter, but use parent;
-	grammar(_,ps,_) = theGrammar;
+ReferenceDistanceInfo referenceDistances(GGrammar theGrammar:grammar(_,ps,_)) {
 	pairs = [ <p, referenceDistance(theGrammar, p)> | p <- ps];
 	int total =  sum([0] + [ x | <_,x> <- pairs]);
 	return <pairs,total>;
 }
 
-int referenceDistance(GGrammar theGrammar, GProd prod) {
+int referenceDistance(GGrammar theGrammar:grammar(_,ps,_), GProd prod) {
 	production(lhs, rhs) = prod;
-	grammar(_,ps,_) = theGrammar;
 	set[str] ns = GrammarUtils::exprNonterminals(rhs);
 	int rhsIndex = indexOf(ps, prod);
 	items = [  max(union({{0}, { abs(rhsIndex - indexOf(ps, p))  | p <- prodsForNonterminal(theGrammar, n) }})) | n <- ns ];
@@ -35,13 +32,7 @@ list[str] violations(GGrammar theGrammar) {
 	list[str] l = orderedLhs(theGrammar);
     rel[str,str] r  = nonterminalReferences(theGrammar);
 	rel[str,str] rPlus = r+;
-
-	list[str] result = []; 
-	for ( [_*,a,b,c,_*] := l, jumpsOver(a,b,c, rPlus)) {
-		result += b;
-	}
-	    
-	return result;
+	return [ b | [_*,a,b,c,_*] := l, jumpsOver(a,b,c, rPlus)];
 }
 
 

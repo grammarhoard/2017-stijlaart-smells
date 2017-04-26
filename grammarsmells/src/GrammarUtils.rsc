@@ -52,24 +52,8 @@ set[set[&T]] partitionForTransitiveClosure(rel[&T,&T] input) {
 	return partitions;
 }
 
-set[set[str]] languageLevels(GGrammar theGrammar) {
-	grammar(ns,_,_) = theGrammar;
-	rel[str,str] referencesClosure = nonterminalReferences(theGrammar)+;
-	return partitionForTransitiveClosure(referencesClosure);
-	//set[set[str]] levels = {};
-	//set[str] done = {};
-	//
-	//for (n <- ns, n notin done) {
-	//	set[str] nextLevel = 
-	//		{ n } + { y | <x,y> <- domainR(referencesClosure, {n})
-	//					, <y,x> in referencesClosure 
-	//				};
-	//	done = nextLevel;
-	//	levels = levels + {nextLevel};
-	//	
-	//}
-	//return levels;
-}
+set[set[str]] languageLevels(GGrammar g) =
+	partitionForTransitiveClosure(nonterminalReferences(g)+);
 
 set[str] exprNonterminals(GExpr expr) {
 	set[str] result = {};
@@ -91,15 +75,16 @@ lrel[GProd, str] prodReferences(grammar(_,ps,_)) {
 }
 
 
-rel[str,str] nonterminalReferences(GGrammar theGrammar ) { 
-	grammar(ns,ps,_) = theGrammar;	
-	return { <n,m> | n <- ns, production(_,e) <- prodsForNonterminal(theGrammar, n), m <- exprNonterminals(e)};
-}
+rel[str,str] nonterminalReferences(GGrammar g:grammar(ns,_,_)) =
+	{ <n,m>
+	| n <- ns
+	, production(_,e) <- prodsForNonterminal(g, n)
+	, m <- exprNonterminals(e)
+	};
+
 
 list[str] orderedLhs(grammar(_,ps,_)) =
 	[ lhs | production(lhs,_) <- ps];
 	
-set[str] grammarTops(GGrammar theGrammar:grammar(ns,ps,ss)) {
-	rel[str,str] r = nonterminalReferences(theGrammar);
-	return toSet(ns) - range(r);
-}
+set[str] grammarTops(GGrammar g:grammar(ns,_,_)) =
+	toSet(ns) - range(nonterminalReferences(g));

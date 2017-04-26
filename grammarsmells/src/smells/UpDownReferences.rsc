@@ -21,13 +21,10 @@ data ReferenceDir
 tuple[int,int] addReferences(<xUp, xDown> , <_, yUp, yDown>) =
 	 <xUp + yUp, xDown + yDown>;
 
-set[GProd] violations(GGrammar theGrammar) {
-	grammar(_,ps,_) = theGrammar;
+set[GProd] violations(GGrammar theGrammar:grammar(_,ps,_)) {
 	ReferenceInfo prodR = getReferenceInfo(theGrammar);
-	iprintln(prodR);
-	
 	set[GProd] upAndDowns = { p | p <- ps, <_,up, down> := prodReference(theGrammar, p), up > 0 && down > 0};
-	iprintln(size(upAndDowns));
+	
 	//TODO Bring back
 	//set[GProd] violations = { p | p <- upAndDowns, canMutateToReduceRatio(theGrammar, prodR, p) };
 	set[set[str]] levels = languageLevels(theGrammar);
@@ -72,9 +69,8 @@ list[list[GProd]] groupProductionsByLevel(list[GProd] prods, set[set[str]] level
 
 int MOVE_DISTANCE = 5;
 
-bool canMutateToReduceRatio(GGrammar theGrammar, ReferenceInfo currentReferenceInfo, GProd prod) {
+bool canMutateToReduceRatio(GGrammar theGrammar:grammar(ns,ps,ss), ReferenceInfo currentReferenceInfo, GProd prod) {
 	iprintln("canMutateToReduceRatio <currentReferenceInfo>");
-	grammar(ns,ps,ss) = theGrammar;
 	int current = indexOf(ps, prod);
 	list[list[GProd]] perms =  movesOfElementInDistance(ps, current, MOVE_DISTANCE);
 	return any(perm <- perms, isMoreExtreme(getReferenceInfo(grammar(ns, perm, ss)), currentReferenceInfo)); 
@@ -91,8 +87,7 @@ list[int] insertPositions(int current, int length, int distance) {
 	return [x | x <- [(current-distance)..(current + distance + 1)], x != current, x >= 0, x <= length ];
 } 
 
-ReferenceInfo getReferenceInfo(GGrammar theGrammar) {
-	grammar(_,ps,_) = theGrammar;
+ReferenceInfo getReferenceInfo(GGrammar theGrammar:grammar(_,ps,_)) {
 	<up,down> = ( <0,0> | addReferences(it, prodReference(theGrammar,p)) | p <- ps);
 	int diff = abs(up - down);
 	real ratio = diff == 0 ? 0.0 : (diff / 1.0) / (up + down);
@@ -107,8 +102,7 @@ ReferenceInfo getReferenceInfo(GGrammar theGrammar) {
 } 
 
 
-ProdReferences prodReference(GGrammar theGrammar, GProd p) {
-	grammar(_,ps,_) = theGrammar;
+ProdReferences prodReference(GGrammar theGrammar:grammar(_,ps,_), GProd p) {
 	production(lhs, rhs) = p;
 	
 	set[str] ns = exprNonterminals(rhs);

@@ -7,10 +7,13 @@ import Set;
 import IO;
 import ListRelation;
 
-set[str] singleNonterminalProductionRules(GGrammar theGrammar) {
-	grammar(_,ps,_) = theGrammar;
-	return { lhs | production(lhs,rhs) <- ps, size(prodsForNonterminal(theGrammar, lhs)) == 1 , nonterminal(x) := rhs };
-}
+set[str] singleNonterminalProductionRules(GGrammar g:grammar(_,ps,_)) =
+	{ lhs 
+	| production(lhs, rhs) <- ps
+	, size(prodsForNonterminal(g, lhs)) == 1
+	, nonterminal(x) := rhs
+	};
+
 
 set[str] violations(GGrammar theGrammar) {
 	lrel[GProd, str] some = prodReferences(theGrammar);
