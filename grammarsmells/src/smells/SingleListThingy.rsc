@@ -11,7 +11,7 @@ import Map::Extra;
 import List;
 
 
-list[GProd] violations(GGrammar g:grammar(ns,ps,ss)) =
+list[GProd] violations(grammarInfo(grammar(_,ps,_), grammarData(_, _, _, _, _), _)) =
 	[ p
 	| p <- ps
 	, production(lhs, rhs) := p

@@ -9,12 +9,9 @@ import Map;
 import Relation;
 import Map::Extra;
 import List;
+import GrammarInformation;
 
-
-set[str] violations(GGrammar g:grammar(ns,ps,ss)){
-	set[str] t = grammarTops(g);
-	//iprintln(t);
-	rel[str,str] r = nonterminalReferences(g);
+set[str] violations(grammarInfo( g:grammar(ns,_,_), grammarData(r, _, expressionIndex, t,_), facts)) {
 	rel[str,str] reflSymTranClos = (r + invert(r))+;
 	return { n | n <- toSet(ns), n notin t, ms := domain(rangeR(reflSymTranClos, {n})), (ms & t) == {} };
 }

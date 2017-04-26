@@ -8,22 +8,17 @@ import Map;
 import Map::Extra;
 import List;
 
-set[GExpr] violations(GGrammar theGrammar) {
-	map[ExpressionOccurence, set[ExpressionOccurenceLocation]] index = buildExpressionIndex(theGrammar);
-	list[GExpr] result = [];
-	result = for (k <- index, fullExpr(c) := k, choice(xs) := c) {
-		list[GExpr] firstsForK = allHeads(xs, theGrammar);
-		set[GExpr] firstForKSet = toSet(firstsForK);
-		if (size(firstForKSet) == 1) {
-			append c;
-		}
-	}
-	return toSet(result);
-}
+set[GExpr] violations(grammarInfo(g, grammarData(_, _, expressionIndex,_,_), _)) =	
+	{ c
+	| k <- expressionIndex
+	, fullExpr(c) := k, choice(xs) := c
+	, size(toSet(allHeads(xs, g))) == 1
+	};
 
-list[GExpr] allHeads(list[GExpr] xs, GGrammar theGrammar) {
-	return [ headOfExpression(x, theGrammar, {}) | x <- xs ];
-}
+
+list[GExpr] allHeads(list[GExpr] xs, GGrammar theGrammar) =
+	[ headOfExpression(x, theGrammar, {}) | x <- xs ];
+
 
 GExpr headOfExpression(GExpr x, GGrammar theGrammar, set[str] viewed) =
 	resolveNonterminal(firstExpr(x), theGrammar, viewed);

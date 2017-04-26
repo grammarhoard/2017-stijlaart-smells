@@ -45,7 +45,6 @@ rel[GProd, GProd] knownSubexpression(map[ExpressionOccurence, set[ExpressionOccu
 	, size(index[k]) > 1
 	, fullExpr(nonterminal(_)) !:= k);
 
-
 map[GExpr, set[GProd]] commonSubexpressions(map[ExpressionOccurence, set[ExpressionOccurenceLocation]] index) {
 	set[tuple[GExpr, GProd, GProd]] triples =
 		( {}
@@ -65,10 +64,8 @@ map[GExpr, set[GProd]] commonSubexpressions(map[ExpressionOccurence, set[Express
 	return ( () | addItemToValueSet(addItemToValueSet(it, a, b), a, c) | <a,b,c> <- triples );
 }
 
-void duplications(GGrammar theGrammar) {
-	map[ExpressionOccurence, set[ExpressionOccurenceLocation]] index = buildExpressionIndex(theGrammar);
-	
-	set[set[GProd]] duplicateRules = duplicateProductionRules(index);
-	rel[GProd,GProd] knownSubs = knownSubexpression(index);
-	map[GExpr, set[GProd]] commonSubs= commonSubexpressions(index);	
+void violations(grammarInfo(g, grammarData(_, _, expressionIndex,_,_), facts)) {	
+	set[set[GProd]] duplicateRules = duplicateProductionRules(expressionIndex);
+	rel[GProd,GProd] knownSubs = knownSubexpression(expressionIndex);
+	map[GExpr, set[GProd]] commonSubs = commonSubexpressions(expressionIndex);	
 }

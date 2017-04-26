@@ -15,10 +15,10 @@ set[str] singleNonterminalProductionRules(GGrammar g:grammar(_,ps,_)) =
 	};
 
 
-set[str] violations(GGrammar theGrammar) {
-	lrel[GProd, str] some = prodReferences(theGrammar);
-	set[str] redirects = singleNonterminalProductionRules(theGrammar);
-	set[str] singleUsages = { n | n <- range(some), size(rangeR(some, {n})) == 1};
+set[str] violations(grammarInfo(g, grammarData(_, _, expressionIndex, tops, _), _)) {
+	lrel[GProd, str] refers = prodReferences(g);
+	set[str] redirects = singleNonterminalProductionRules(g);
+	set[str] singleUsages = { n | n <- range(refers), size(rangeR(refers, {n})) == 1};
 	return redirects + singleUsages;
 }
 

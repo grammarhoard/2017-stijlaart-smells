@@ -88,3 +88,6 @@ list[str] orderedLhs(grammar(_,ps,_)) =
 	
 set[str] grammarTops(GGrammar g:grammar(ns,_,_)) =
 	toSet(ns) - range(nonterminalReferences(g));
+
+set[str] grammarBottoms(GGrammar g:grammar(ns,_,_)) =
+	range(nonterminalReferences(g)) - toSet(ns);

@@ -12,7 +12,5 @@ import Map::Extra;
 import List;
 
 
-set[str] violations(GGrammar theGrammar:grammar(ns,ps,ss)) {
-	set[str] tops = grammarTops(theGrammar);
-	return size(tops) == 1 ? {} : (isEmpty(tops) ? toSet(ns) : tops);
-}
+set[str] violations(grammarInfo(grammar(ns,_,_), grammarData(_, _, expressionIndex, tops, _), facts)) =
+	size(tops) == 1 ? {} : (isEmpty(tops) ? toSet(ns) : tops);

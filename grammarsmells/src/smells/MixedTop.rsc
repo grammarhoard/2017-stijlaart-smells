@@ -11,11 +11,10 @@ import Map::Extra;
 import List;
 
 
-set[str] violations(GGrammar theGrammar:grammar(ns,ps,_)) {
-	set[str] tops = grammarTops(theGrammar);
+set[str] violations(grammarInfo(grammar(_, ps, _), grammarData(_, _, expressionIndex, tops, _), _)) {
 	list[str] prodNs = [ lhs | production(lhs,_) <- ps];
-	
 	set[str] firstAndLast = {head(prodNs), last(prodNs)};
+	
 	if (tops != {} && (firstAndLast & tops) == {}) {
 		return {head(prodNs), last(prodNs)} + tops;
 	}  else {

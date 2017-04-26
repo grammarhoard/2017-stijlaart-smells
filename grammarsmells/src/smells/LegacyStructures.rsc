@@ -1,6 +1,6 @@
 module smells::LegacyStructures
 
-
+import GrammarInformation;
 import grammarlab::language::Grammar;
 import GrammarUtils;
 import Set;
@@ -15,60 +15,40 @@ data LegacyUsage
 	| legacyStar(str n)
 	;
 	
-set[LegacyUsage] violations(g) =
+set[LegacyUsage] violations(GrammarInfo info) =
 	  { legacyOptional(n)
-	  | n <- legacyOptionalViolations(g)
+	  | n <- legacyOptionalViolations(info)
 	  } 
 	+ { legacyPlus(n)
-	  | n <- legacyIterationPlusViolations(g)
+	  | n <- legacyIterationPlusViolations(info)
 	  }
     + { legacyStar(n)
-	  | n <- legacyIterationStarViolations(g)
+	  | n <- legacyIterationStarViolations(info)
 	  }
 	  ;
 	  
-set[str] legacyOptionalViolations(g:grammar(ns,ps,ss)) =
-	grammarContainsOptional(g) ? legacyOptionals(g) : {};
+set[str] legacyOptionalViolations(grammarInfo(g, gData, facts)) =
+	facts[containsOptional()] ? legacyOptionals(g, gData) : {};
 	
-set[str] legacyIterationPlusViolations(g:grammar(ns,ps,ss)) =
-	grammarContainsPlusIteration(g) ? legacyPlusIterations(g) : {};
+set[str] legacyIterationPlusViolations(grammarInfo(g, gData, facts)) =
+	facts[containsPlus()] ? legacyPlusIterations(g, gData) : {};
 
-set[str] legacyIterationStarViolations(g:grammar(ns,ps,ss)) =
-	grammarContainsStarIteration(g) ? legacyStarIterations(g) : {};
+set[str] legacyIterationStarViolations(grammarInfo(g, gData, facts)) =
+	facts[containsStar()] ? legacyStarIterations(g, gData) : {};
 	
-	
-bool grammarContainsOptional(g:grammar(ns,ps,ss)) =
-	size({ lhs 
-		 | production(lhs,rhs) <- ps
-		 , /optional(_) := rhs
-		 })
- 	> 0;
-	
-bool grammarContainsPlusIteration(g:grammar(ns,ps,ss)) =
-	size({ lhs 
-		 | production(lhs,rhs) <- ps
-		 , /plus(_) := rhs
-		 })
- 	> 0;
- 	
-bool grammarContainsStarIteration(g:grammar(ns,ps,ss)) =
-	size({ lhs 
-		 | production(lhs,rhs) <- ps
-		 , /star(_) := rhs
-		 })
- 	> 0;
-set[str] legacyOptionals(g:grammar(ns,ps,ss)) =
+
+set[str] legacyOptionals(g:grammar(ns,ps,ss), grammarData(_, nprods, expressionIndex,_,_)) =
 	{ n
     | n <- ns
-    , pns := prodsForNonterminal(g, n)
+    , pns := nprods[n]
     , {production(_,choice([_,epsilon()]))} := pns 
       || {production(_,_), production(_,epsilon())} := pns
 	};
 
-set[str] legacyStarIterations(g:grammar(ns,ps,ss)) {
+set[str] legacyStarIterations(g:grammar(ns,ps,ss), grammarData(_, nprods, expressionIndex,_,_)) {
 	return { n
 		   | n <- ns
-		   , pns := prodsForNonterminal(g, n)
+		   , pns := nprods[n]
 		   ,     { production(_, choice([epsilon(), sequence([nonterminal(n), a, b*])]))} := pns
 		      || { production(_, choice([sequence([nonterminal(n), a, b*]), epsilon()]))} := pns
 		      || { production(_, sequence([nonterminal(n), a, b*]))
@@ -80,10 +60,10 @@ set[str] legacyStarIterations(g:grammar(ns,ps,ss)) {
 		   };
 }
 
-set[str] legacyPlusIterations(g:grammar(ns,ps,ss)) {
+set[str] legacyPlusIterations(g:grammar(ns,ps,ss), grammarData(_, nprods, expressionIndex,_,_)) {
 	return { n
 		    | n <- ns
-		    , pns := prodsForNonterminal(g, n)
+		    , pns := nprods(g, n)
 		    ,    { production(_, choice([a, sequence([nonterminal(n), a])]))} := pns
 		      || { production(_, choice([sequence([a, b*]), sequence([nonterminal(n), a, b*])]))} := pns
 		      || { production(_, choice([a, sequence([a, nonterminal(n)])]))} := pns

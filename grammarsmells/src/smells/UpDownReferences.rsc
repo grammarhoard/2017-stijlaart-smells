@@ -21,25 +21,27 @@ data ReferenceDir
 tuple[int,int] addReferences(<xUp, xDown> , <_, yUp, yDown>) =
 	 <xUp + yUp, xDown + yDown>;
 
-set[GProd] violations(GGrammar theGrammar:grammar(_,ps,_)) {
-	ReferenceInfo prodR = getReferenceInfo(theGrammar);
-	set[GProd] upAndDowns = { p | p <- ps, <_,up, down> := prodReference(theGrammar, p), up > 0 && down > 0};
+set[GProd] violations(info:grammarInfo(g:grammar(_, ps, _), grammarData(_, _, expressionIndex, tops, _), _)) {
+	ReferenceInfo prodR = getReferenceInfo(info);
+	
+	set[GProd] upAndDowns = { p | p <- ps, <_,up, down> := prodReference(g, p), up > 0 && down > 0};
 	
 	//TODO Bring back
-	//set[GProd] violations = { p | p <- upAndDowns, canMutateToReduceRatio(theGrammar, prodR, p) };
-	set[set[str]] levels = languageLevels(theGrammar);
-
-	list[list[GProd]] groupedByLevel = groupProductionsByLevel(ps, levels);
-	list[set[str]] groupedByLevelNs = [ { lhs | production(lhs,_) <- group } | group <- groupedByLevel ];
-	
-	for ( [_*, a, _*, b, _*, c, _*] := groupedByLevelNs) {
-		set[str] aLevel = levelFor(a, levels);
-		set[str] bLevel = levelFor(b, levels);
-		set[str] cLevel = levelFor(c, levels);
-		if (aLevel == cLevel && aLevel != bLevel) {
-			iprintln("Violation <a> <b> <c>");
-		}
-	}
+	//set[GProd] violations = { p | p <- upAndDowns, canMutateToReduceRatio(info, prodR, p) };
+	set[GProd] violations = {};
+//	set[set[str]] levels = languageLevels(g);
+//
+//	list[list[GProd]] groupedByLevel = groupProductionsByLevel(ps, levels);
+//	list[set[str]] groupedByLevelNs = [ { lhs | production(lhs,_) <- group } | group <- groupedByLevel ];
+//	
+//	for ( [_*, a, _*, b, _*, c, _*] := groupedByLevelNs) {
+//		set[str] aLevel = levelFor(a, levels);
+//		set[str] bLevel = levelFor(b, levels);
+//		set[str] cLevel = levelFor(c, levels);
+//		if (aLevel == cLevel && aLevel != bLevel) {
+//			iprintln("Violation <a> <b> <c>");
+//		}
+//	}
 	return violations;
 }
 
@@ -69,11 +71,11 @@ list[list[GProd]] groupProductionsByLevel(list[GProd] prods, set[set[str]] level
 
 int MOVE_DISTANCE = 5;
 
-bool canMutateToReduceRatio(GGrammar theGrammar:grammar(ns,ps,ss), ReferenceInfo currentReferenceInfo, GProd prod) {
+bool canMutateToReduceRatio(info:grammarInfo(grammar(_, ps, _), grammarData(_, _, expressionIndex, tops, _), _), ReferenceInfo currentReferenceInfo, GProd prod) {
 	iprintln("canMutateToReduceRatio <currentReferenceInfo>");
 	int current = indexOf(ps, prod);
 	list[list[GProd]] perms =  movesOfElementInDistance(ps, current, MOVE_DISTANCE);
-	return any(perm <- perms, isMoreExtreme(getReferenceInfo(grammar(ns, perm, ss)), currentReferenceInfo)); 
+	return any(perm <- perms, isMoreExtreme(getReferenceInfo(info), currentReferenceInfo)); 
 }
 
 bool isMoreExtreme(referenceInfo(_, _, _, aRatio), referenceInfo(_ ,_ ,_ , bRatio)) =
@@ -87,11 +89,10 @@ list[int] insertPositions(int current, int length, int distance) {
 	return [x | x <- [(current-distance)..(current + distance + 1)], x != current, x >= 0, x <= length ];
 } 
 
-ReferenceInfo getReferenceInfo(GGrammar theGrammar:grammar(_,ps,_)) {
-	<up,down> = ( <0,0> | addReferences(it, prodReference(theGrammar,p)) | p <- ps);
+ReferenceInfo getReferenceInfo(grammarInfo(g:grammar(_, ps, _), grammarData(_, _, expressionIndex, tops, _), _)) {
+	<up,down> = ( <0,0> | addReferences(it, prodReference(g,p)) | p <- ps);
 	int diff = abs(up - down);
 	real ratio = diff == 0 ? 0.0 : (diff / 1.0) / (up + down);
-	iprintln(ratio);
 	return 
 		referenceInfo(
 			  up

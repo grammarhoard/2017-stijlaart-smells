@@ -8,6 +8,7 @@ import IO;
 import Map;
 import Map::Extra;
 import List;
+import GrammarInformation;
 
 data DefinitionDirection
 	= horizontal(str s)
@@ -17,11 +18,9 @@ data DefinitionDirection
 	;
 
 
-set[DefinitionDirection] definitionStyles(GGrammar g:grammar(ns, ps, _)) {
-	map[str,set[GProd]] index = nonterminalProdMap(g);
-	
-	set[str] horizontals = { k | k <- index, anyHorizontal(index[k])};
-	set[str] verticals = { k | k <- index, size(index[k]) > 1};
+set[DefinitionDirection] definitionStyles(grammarInfo(grammar(ns,_,_), grammarData(_, nprods, _,_,_), _)) {
+	set[str] horizontals = { k | k <- nprods, anyHorizontal(nprods[k])};
+	set[str] verticals = { k | k <- nprods, size(nprods[k]) > 1};
 	set [str] zigZags = (verticals & horizontals);
 	
 	return { zigZag(s) | s <- zigZags }
@@ -31,8 +30,8 @@ set[DefinitionDirection] definitionStyles(GGrammar g:grammar(ns, ps, _)) {
 		 ;
 }
 
-set[str] violations(GGrammar g) =
-	{ y | x <- definitionStyles(g), zigZag(y) := x};
+set[str] violations(GrammarInfo info) =
+	{ y | x <- definitionStyles(info), zigZag(y) := x};
 
 
 bool anyHorizontal(set[GProd] items) =
