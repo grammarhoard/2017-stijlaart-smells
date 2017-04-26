@@ -51,9 +51,11 @@ bool containsOptionalFact(grammarData(_,_,index,_,_))
 		 );
 	
 GrammarInfo build(GGrammar theGrammar) {
+	map[str, set[GProd]] nprods = nonterminalProdMap(theGrammar);
+
 	GrammarData d = grammarData(
-		nonterminalReferences(theGrammar),
-		nonterminalProdMap(theGrammar),
+		nonterminalReferencesWithProdMap(theGrammar, nprods),
+		nprods,
 		buildExpressionIndex(theGrammar),
 		grammarTops(theGrammar),
 		grammarBottoms(theGrammar)

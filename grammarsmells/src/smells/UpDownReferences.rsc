@@ -21,10 +21,10 @@ data ReferenceDir
 tuple[int,int] addReferences(<xUp, xDown> , <_, yUp, yDown>) =
 	 <xUp + yUp, xDown + yDown>;
 
-set[GProd] violations(info:grammarInfo(g:grammar(_, ps, _), grammarData(_, _, expressionIndex, tops, _), _)) {
+set[GProd] violations(info:grammarInfo(g:grammar(_, ps, _), grammarData(_, nprods, expressionIndex, tops, _), _)) {
 	ReferenceInfo prodR = getReferenceInfo(info);
 	
-	set[GProd] upAndDowns = { p | p <- ps, <_,up, down> := prodReference(g, p), up > 0 && down > 0};
+	set[GProd] upAndDowns = { p | p <- ps, <_,up, down> := prodReference(nprods, g, p), up > 0 && down > 0};
 	
 	//TODO Bring back
 	//set[GProd] violations = { p | p <- upAndDowns, canMutateToReduceRatio(info, prodR, p) };
@@ -89,8 +89,8 @@ list[int] insertPositions(int current, int length, int distance) {
 	return [x | x <- [(current-distance)..(current + distance + 1)], x != current, x >= 0, x <= length ];
 } 
 
-ReferenceInfo getReferenceInfo(grammarInfo(g:grammar(_, ps, _), grammarData(_, _, expressionIndex, tops, _), _)) {
-	<up,down> = ( <0,0> | addReferences(it, prodReference(g,p)) | p <- ps);
+ReferenceInfo getReferenceInfo(grammarInfo(g:grammar(_, ps, _), grammarData(_, nprods, expressionIndex, tops, _), _)) {
+	<up,down> = ( <0,0> | addReferences(it, prodReference(nprods, g,p)) | p <- ps);
 	int diff = abs(up - down);
 	real ratio = diff == 0 ? 0.0 : (diff / 1.0) / (up + down);
 	return 
@@ -103,7 +103,7 @@ ReferenceInfo getReferenceInfo(grammarInfo(g:grammar(_, ps, _), grammarData(_, _
 } 
 
 
-ProdReferences prodReference(GGrammar theGrammar:grammar(_,ps,_), GProd p) {
+ProdReferences prodReference(map[str, set[GProd]] nprods, GGrammar theGrammar:grammar(_,ps,_), GProd p) {
 	production(lhs, rhs) = p;
 	
 	set[str] ns = exprNonterminals(rhs);
@@ -112,7 +112,7 @@ ProdReferences prodReference(GGrammar theGrammar:grammar(_,ps,_), GProd p) {
 	int up = 0;
 
 	for(n <- ns) {
-		otherPIndices = {indexOf(ps, otherP) | otherP <- prodsForNonterminal(theGrammar, n)};
+		otherPIndices = {indexOf(ps, otherP) | nprods[n]?, otherP <- nprods[n]};
 		if ( !isEmpty({ i | i <- otherPIndices, pIndex < i})) {
 			down +=1;
 		} 

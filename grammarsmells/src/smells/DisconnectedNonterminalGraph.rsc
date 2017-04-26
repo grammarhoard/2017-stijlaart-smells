@@ -13,5 +13,6 @@ import GrammarInformation;
 
 set[str] violations(grammarInfo( g:grammar(ns,_,_), grammarData(r, _, expressionIndex, t,_), facts)) {
 	rel[str,str] reflSymTranClos = (r + invert(r))+;
-	return { n | n <- toSet(ns), n notin t, ms := domain(rangeR(reflSymTranClos, {n})), (ms & t) == {} };
+	indexed = index(reflSymTranClos);
+	return { n | n <- toSet(ns), n notin t, ms := indexed[n], (ms & t) == {} };
 }

@@ -63,7 +63,7 @@ set[str] legacyStarIterations(g:grammar(ns,ps,ss), grammarData(_, nprods, expres
 set[str] legacyPlusIterations(g:grammar(ns,ps,ss), grammarData(_, nprods, expressionIndex,_,_)) {
 	return { n
 		    | n <- ns
-		    , pns := nprods(g, n)
+		    , pns := nprods[n]
 		    ,    { production(_, choice([a, sequence([nonterminal(n), a])]))} := pns
 		      || { production(_, choice([sequence([a, b*]), sequence([nonterminal(n), a, b*])]))} := pns
 		      || { production(_, choice([a, sequence([a, nonterminal(n)])]))} := pns

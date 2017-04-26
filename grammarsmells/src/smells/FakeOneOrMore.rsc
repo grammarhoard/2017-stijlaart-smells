@@ -17,7 +17,7 @@ set[tuple[GExpr, GExpr, GExpr]] fakeOneOrMoreForExpression(GExpr e) {
 	return answer;
 }
 
-set[tuple[GExpr, GExpr, GExpr]] voilations(grammarInfo(grammar(_,ps,_), grammarData(_, _, expressionIndex,_,_), facts)) =
+set[tuple[GExpr, GExpr, GExpr]] violations(grammarInfo(grammar(_,ps,_), grammarData(_, _, expressionIndex,_,_), facts)) =
 	( {}
 	| it + fakeOneOrMoreForExpression(rhs)
 	| production(lhs,rhs) <-ps

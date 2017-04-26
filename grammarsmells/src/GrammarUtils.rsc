@@ -63,8 +63,8 @@ set[str] exprNonterminals(GExpr expr) {
 	return result;
 }
 
-map[str, set[GProd]] nonterminalProdMap(grammar(ns, ps, ss)) =
-	( n : prodsForNonterminal(grammar(ns,ps,ss), n) | n <- ns);
+map[str, set[GProd]] nonterminalProdMap(g:grammar(ns, ps, ss)) =
+	( n : prodsForNonterminal(g, n) | n <- ns);
 	
 set[GProd] prodsForNonterminal(grammar(_,ps,_), str n) =
 	{ p | p <- ps , production(m,_) := p, n == m};
@@ -74,13 +74,15 @@ lrel[GProd, str] prodReferences(grammar(_,ps,_)) {
 	return [ <production(lhs,rhs), n> | production(lhs,rhs) <- ps, n <- exprNonterminals(rhs)];
 }
 
-
-rel[str,str] nonterminalReferences(GGrammar g:grammar(ns,_,_)) =
+rel[str,str] nonterminalReferencesWithProdMap(GGrammar g:grammar(ns,_,_), map[str, set[GProd]] nprods) = 
 	{ <n,m>
 	| n <- ns
-	, production(_,e) <- prodsForNonterminal(g, n)
+	, production(_,e) <- nprods[n]
 	, m <- exprNonterminals(e)
 	};
+	
+rel[str,str] nonterminalReferences(GGrammar g) =
+	nonterminalReferencesWithProdMap(g, nonterminalProdMap(g));
 
 
 list[str] orderedLhs(grammar(_,ps,_)) =
