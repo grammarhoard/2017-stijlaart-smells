@@ -10,9 +10,10 @@ import Relation;
 import Map::Extra;
 import List;
 import GrammarInformation;
+import Violations;
 
-set[str] violations(grammarInfo( g:grammar(ns,_,_), grammarData(r, _, expressionIndex, t,_), facts)) {
+set[Violation] violations(grammarInfo( g:grammar(ns,_,_), grammarData(r, _, expressionIndex, t,_), facts)) {
 	rel[str,str] reflSymTranClos = (r + invert(r))+;
 	indexed = index(reflSymTranClos);
-	return { n | n <- toSet(ns), n notin t, ms := indexed[n], (ms & t) == {} };
+	return  { <violatingNonterminal(n), disconnectedFromTop()> | n <- toSet(ns), n notin t, ms := indexed[n], (ms & t) == {} };
 }

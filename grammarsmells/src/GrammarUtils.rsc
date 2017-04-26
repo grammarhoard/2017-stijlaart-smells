@@ -67,7 +67,7 @@ map[str, set[GProd]] nonterminalProdMap(g:grammar(ns, ps, ss)) =
 	( n : prodsForNonterminal(g, n) | n <- ns);
 	
 set[GProd] prodsForNonterminal(grammar(_,ps,_), str n) =
-	{ p | p <- ps , production(m,_) := p, n == m};
+	{ p | p <- ps , production(n,_) := p};
 
 
 lrel[GProd, str] prodReferences(grammar(_,ps,_)) {

@@ -6,7 +6,8 @@ import Set;
 import IO;
 import Map;
 import Map::Extra;
-	
+import Violations;
+
 bool isNonterminal(ExpressionOccurence x) {
 	if (fullExpr(nonterminal(_)) := x) {
 		return true;
@@ -32,10 +33,10 @@ set[set[GProd]] duplicateProductionRules(map[ExpressionOccurence, set[Expression
 }
 
 
-rel[GProd, GProd] knownSubexpression(map[ExpressionOccurence, set[ExpressionOccurenceLocation]] index) = 
+rel[GExpr, GProd, GProd] knownSubexpression(map[ExpressionOccurence, set[ExpressionOccurenceLocation]] index) = 
 	( {}
 	| it + 
-		{ <s,r> 
+		{ <l, s, r> 
 		| n <- index[k]
 		, occurenceRule(r) := n
 		, m <- index[k]
@@ -43,9 +44,10 @@ rel[GProd, GProd] knownSubexpression(map[ExpressionOccurence, set[ExpressionOccu
 		}
 	| k <- index
 	, size(index[k]) > 1
-	, fullExpr(nonterminal(_)) !:= k);
+	, fullExpr(l) := k
+	, nonterminal(_) !:= l);
 
-map[GExpr, set[GProd]] commonSubexpressions(map[ExpressionOccurence, set[ExpressionOccurenceLocation]] index) {
+rel[GExpr, set[GProd]] commonSubexpressions(map[ExpressionOccurence, set[ExpressionOccurenceLocation]] index) {
 	set[tuple[GExpr, GProd, GProd]] triples =
 		( {}
 		| it + 
@@ -61,11 +63,13 @@ map[GExpr, set[GProd]] commonSubexpressions(map[ExpressionOccurence, set[Express
 		, nonterminal(_) !:= full
 		, terminal(_) !:= full
 		);
-	return ( () | addItemToValueSet(addItemToValueSet(it, a, b), a, c) | <a,b,c> <- triples );
+	map[GExpr, set[GProd]] indexedExpressions = ( () | addItemToValueSet(addItemToValueSet(it, a, b), a, c) | <a,b,c> <- triples );
+	return { <k, indexedExpressions[k]> | k <- indexedExpressions};
 }
 
-void violations(grammarInfo(g, grammarData(_, _, expressionIndex,_,_), facts)) {	
-	set[set[GProd]] duplicateRules = duplicateProductionRules(expressionIndex);
-	rel[GProd,GProd] knownSubs = knownSubexpression(expressionIndex);
-	map[GExpr, set[GProd]] commonSubs = commonSubexpressions(expressionIndex);	
-}
+set[Violation] violations(grammarInfo(g, grammarData(_, _, expressionIndex,_,_), facts))	
+	= { <violatingProductions(rules), duplicateRules()> | rules <- duplicateProductionRules(expressionIndex) }
+	+ { <violatingProductions({b,c}), definedSubExpression(a,b,c)> | <a,b,c> <- knownSubexpression(expressionIndex)}
+	+ { <violatingProductions(xs), commonSubExpression(a)> | <a,xs> <- commonSubexpressions(expressionIndex)}
+	;
+	

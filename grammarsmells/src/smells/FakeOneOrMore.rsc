@@ -1,24 +1,18 @@
 module smells::FakeOneOrMore
 
-
-import IO;
 import grammarlab::language::Grammar;
 import GrammarUtils;
-import List;
-import Set;
-import Relation;
+import Violations;
+
+set[Violation] violations(grammarInfo(grammar(_,ps,_), grammarData(_, _, expressionIndex,_,_), facts)) =
+	{ <violatingExpression(a), fakeOneOrMore(a,b,c)>
+	| production(lhs,rhs) <- ps
+	, <a,b,c> <- fakeOneOrMoreForExpression(rhs) 
+	}; 
 
 
-set[tuple[GExpr, GExpr, GExpr]] fakeOneOrMoreForExpression(GExpr e) {
-	set[tuple[GExpr, GExpr, GExpr]] answer = {};
-	for (/match:sequence([*_, left:star(x), right:x, *_]) := e || /match:sequence([*_, left:x, right:star(x), *_]) := e) {
-		answer += <match, left, right>;
-	}
-	return answer;
-}
-
-set[tuple[GExpr, GExpr, GExpr]] violations(grammarInfo(grammar(_,ps,_), grammarData(_, _, expressionIndex,_,_), facts)) =
-	( {}
-	| it + fakeOneOrMoreForExpression(rhs)
-	| production(lhs,rhs) <-ps
-	); 
+rel[GExpr, GExpr, GExpr] fakeOneOrMoreForExpression(GExpr e) =
+	{ <match, left, right>
+	| /match:sequence([*_, left:star(x), right:x, *_]) := e ||
+	  /match:sequence([*_, left:x, right:star(x), *_]) := e
+	};
