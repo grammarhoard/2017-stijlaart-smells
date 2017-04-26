@@ -22,6 +22,7 @@ import smells::LegacyStructures;
 import smells::EntryPoint;
 import smells::MixedTop;
 import smells::DisconnectedNonterminalGraph;
+import smells::SingleListThingy;
 
 void run() {
 	x = Input::extractedGrammarLocationsInDir(|project://grammarsmells/input/zoo|);
@@ -33,10 +34,11 @@ void run() {
 		
 		//set[str] a = smells::MixedTop::violations(theGrammar);
 		//set[str] b = smells::EntryPoint::violations(theGrammar);
-		set[str] result = smells::DisconnectedNonterminalGraph::violations(theGrammar);
+		//set[str] result = smells::DisconnectedNonterminalGraph::violations(theGrammar);
 		//iprintln(c);
 		//iprintln(b);
-		iprintln(result);
+		//iprintln(result);
+		iprintln(smells::SingleListThingy::violations(theGrammar));
 		//if (size(result) > 0) {
 			//iprintln(result);
 			//return;
