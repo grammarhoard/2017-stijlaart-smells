@@ -9,6 +9,7 @@ import GrammarUtils;
 import Map;
 import Set;
 import util::Math;
+import lang::json::IO;
 
 import smells::DisconnectedNonterminalGraph;
 import smells::ProxyNonterminals;
@@ -34,12 +35,20 @@ import GrammarInformation;
 alias GrammarAnalysis = tuple[loc l, GrammarInfo gInfo, set[Violation] violations];
 
 void run() {
-	inputFiles = Input::extractedGrammarLocationsInDir(|project://grammarsmells/input/zoo|);
-		
+	list[loc] inputFiles = Input::extractedGrammarLocationsInDir(|project://grammarsmells/input/zoo|);
+	inputFiles = take(12, drop(0, inputFiles));
+	
+	println("Loading grammar info for locations");
+	pairs = [ <l,GrammarInformation::build(l)> | l <- inputFiles];
+	
+	exportReferencingInfo(pairs);
+	writeGrammarStats(pairs);
+	writeMixedDefinitionStats(pairs);
 	list[GrammarAnalysis] result = [];
-	result = for (loc y <- take(10,drop(0, inputFiles))) {
-		iprintln("Analysing <y>...");
-		GrammarInfo gInfo = GrammarInformation::build(y);
+	
+	//TODO Remove take/drop
+	result = for (<y, gInfo> <- take(10,drop(0, pairs))) {
+		println("Analysing <y>...");
 		set[Violation] vs = smellsInGrammar(gInfo);
 		append <y, gInfo, vs>;
 		//println("<size(vs)>\t<y>");
@@ -48,10 +57,75 @@ void run() {
 		list[str] proxies = [ n | v <- vs , <violatingNonterminal(n),redirectingNonterminal()> := v];
 		//iprintln(proxies);
 		grammarInfo(grammar(ns, _, _), _, _) = g;
-		println("<size(proxies)> / <size(toSet(ns))>\t(<size(proxies) / 1.0 / size(toSet(ns))>)\t | <l>"); 
+		//println("<size(proxies)> / <size(toSet(ns))>\t(<size(proxies) / 1.0 / size(toSet(ns))>)\t | <l>"); 
 	}
 	//iprintln(size({ l | <l, g, v> <- result, /proxyNonterminal() := v }));
 }
+
+
+void exportReferencingInfo(list[tuple[loc, GrammarInfo]] inputFiles) {
+	list[value] x = [referenceInfoJson(l, i) | <l,gInfo> <- inputFiles, i := getReferenceInfo(gInfo)];
+	IO::writeFile(|project://grammarsmells/output/reference-info.json|, toJSON(x, true));
+}
+
+value referenceInfoJson(loc l, ReferenceInfo i:referenceInfo(up,down,dir,ratio)) =
+	( "location" : "<l>"
+	, "up" : up
+	, "down" : down
+	, "dir" : dir == downReferencing() ? "DOWN" : dir == upReferencing() ? "UP" : "EVEN"
+	, "ratio" : ratio
+	);
+
+
+void writeGrammarStats(list[tuple[loc, GrammarInfo]] inputFiles) {
+	list[value] x = [ grammarStatsJson(l, gInfo) | <l,gInfo> <- inputFiles];
+	IO::writeFile(|project://grammarsmells/output/grammar-stats.json|, toJSON(x, true));
+}
+
+value grammarStatsJson(loc l, grammarInfo(g:grammar(ns,ps,ss), grammarData(_,_,_,tops,bottoms), _)) =
+		( "location": "<l>"
+		, "nonterminals" : size(ns)
+		, "productions" : size(ps)
+		, "tops" : size(tops)
+		, "bottoms" :size(bottoms)
+		, "terminals" : "TODO"
+		, "structures" : "TODO"
+		);
+
+void writeMixedDefinitionStats(list[tuple[loc, GrammarInfo]] input) {
+	lrel[loc,set[DefinitionDirection]] definitionStyleList = [ <l,definitionStyles(gInfo)> | <l,gInfo> <- input];
+	list[value] x = [ mixedDefinitonJson(l, defs) | <l, defs> <- definitionStyleList];
+	
+	iprintln(definitionStyleList);
+	
+	lrel[bool,bool,bool] triples = [ <(/horizontal(_) := ds), (/vertical(_) := ds), (/zigZag(_) := ds)> | <_,ds> <- definitionStyleList ];
+	iprintln(triples);
+	
+	map[tuple[bool,bool,bool],int] m = ( <a,b,c> : 0 | a <- {true,false}, b <- {true,false}, c <- {true,false} );
+	m = ( m | incK(it,k) | k <- triples);
+	
+	overall = ( "<a>_<b>_<c>" : m[<a,b,c>] | <a,b,c> <- m);
+	
+	IO::writeFile(
+		|project://grammarsmells/output/mixed-definitions.json|,
+		toJSON( ( "files" : x, "overall" : overall), true)
+	);	
+}
+
+map[&T,int] incK(map[&T,int] m, &T k) {
+	m[k] = m[k] + 1;
+	return m;
+}
+value mixedDefinitonJson(loc l, set[DefinitionDirection] x) {
+	return
+		( "location": "<l>"
+		, "horizontals" : size({ v | v:horizontal(_) <- x})
+		, "verticals" : size({ v | v:vertical(_) <- x})
+		, "zigzags" : size({ v | v:zigZag(_) <- x})
+		, "undecided" : size({ v | v:undecided(_) <- x})
+		);
+}
+	
 
 set[Violation] smellsInGrammar(gInfo) =
 	   smells::DisconnectedNonterminalGraph::violations(gInfo)

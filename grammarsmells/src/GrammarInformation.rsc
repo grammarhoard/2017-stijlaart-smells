@@ -52,7 +52,7 @@ bool containsOptionalFact(grammarData(_,_,index,_,_))
 		 );
 	
 GrammarInfo build(loc l) {
-	GGrammar theGrammar = readBGF(l);
+	GGrammar theGrammar = grammarlab::io::read::BGF::readBGF(l);
 		
 	map[str, set[GProd]] nprods = nonterminalProdMap(theGrammar);
 
