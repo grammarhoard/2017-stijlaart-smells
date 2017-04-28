@@ -31,12 +31,13 @@ import smells::UpDownReferences;
 
 import Violations;
 import GrammarInformation;
+import Map::Extra;
 
 alias GrammarAnalysis = tuple[loc l, GrammarInfo gInfo, set[Violation] violations];
 
 void run() {
 	list[loc] inputFiles = Input::extractedGrammarLocationsInDir(|project://grammarsmells/input/zoo|);
-	inputFiles = take(12, drop(0, inputFiles));
+	//inputFiles = take(12, drop(0, inputFiles));
 	
 	println("Loading grammar info for locations");
 	pairs = [ <l,GrammarInformation::build(l)> | l <- inputFiles];
@@ -55,7 +56,6 @@ void run() {
 	}
 	for (<l,g,vs> <- result) {
 		list[str] proxies = [ n | v <- vs , <violatingNonterminal(n),redirectingNonterminal()> := v];
-		//iprintln(proxies);
 		grammarInfo(grammar(ns, _, _), _, _) = g;
 		//println("<size(proxies)> / <size(toSet(ns))>\t(<size(proxies) / 1.0 / size(toSet(ns))>)\t | <l>"); 
 	}
@@ -95,35 +95,33 @@ value grammarStatsJson(loc l, grammarInfo(g:grammar(ns,ps,ss), grammarData(_,_,_
 void writeMixedDefinitionStats(list[tuple[loc, GrammarInfo]] input) {
 	lrel[loc,set[DefinitionDirection]] definitionStyleList = [ <l,definitionStyles(gInfo)> | <l,gInfo> <- input];
 	list[value] x = [ mixedDefinitonJson(l, defs) | <l, defs> <- definitionStyleList];
-	
-	iprintln(definitionStyleList);
-	
 	lrel[bool,bool,bool] triples = [ <(/horizontal(_) := ds), (/vertical(_) := ds), (/zigZag(_) := ds)> | <_,ds> <- definitionStyleList ];
-	iprintln(triples);
 	
 	map[tuple[bool,bool,bool],int] m = ( <a,b,c> : 0 | a <- {true,false}, b <- {true,false}, c <- {true,false} );
-	m = ( m | incK(it,k) | k <- triples);
+	m = ( m | incK(it,k, 1) | k <- triples);
+	map[str,int] totals = ( directionTotals({}) | merge(it, directionTotals(v), (int)(int a, int b){return a + b;} ) | <_,v> <- definitionStyleList);
 	
-	overall = ( "<a>_<b>_<c>" : m[<a,b,c>] | <a,b,c> <- m);
-	
+	overall = ( "file_types" : ("<a>_<b>_<c>" : m[<a,b,c>] | <a,b,c> <- m)
+			  , "totals" : totals 
+			  );
+			  
 	IO::writeFile(
 		|project://grammarsmells/output/mixed-definitions.json|,
 		toJSON( ( "files" : x, "overall" : overall), true)
 	);	
 }
 
-map[&T,int] incK(map[&T,int] m, &T k) {
-	m[k] = m[k] + 1;
-	return m;
-}
+map[str, int] directionTotals(set[DefinitionDirection] x) =
+	( "horizontals" : size({ v | v:horizontal(_) <- x})
+	, "verticals" : size({ v | v:vertical(_) <- x})
+	, "zigzags" : size({ v | v:zigZag(_) <- x})
+	, "undecided" : size({ v | v:undecided(_) <- x})
+	);
+
 value mixedDefinitonJson(loc l, set[DefinitionDirection] x) {
-	return
-		( "location": "<l>"
-		, "horizontals" : size({ v | v:horizontal(_) <- x})
-		, "verticals" : size({ v | v:vertical(_) <- x})
-		, "zigzags" : size({ v | v:zigZag(_) <- x})
-		, "undecided" : size({ v | v:undecided(_) <- x})
-		);
+	map[str, value] r = directionTotals(x);
+	r["location"] = "<l>";
+	return r;
 }
 	
 

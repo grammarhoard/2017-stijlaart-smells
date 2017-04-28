@@ -10,3 +10,20 @@ map[&K, set[&V]] addItemToValueSet(map[&K, set[&V]] index, &K k, &V v) {
 	}
 	return index;
 }
+
+map[&K, &V] merge(map[&K, &V] a, map[&K, &V] b, &V(&V,&V) add ) {
+	for (k <- b) {
+		if (a[k]?) {
+			a[k] = add(a[k], b[k]);
+		} else {
+			a[k] = b[k];
+		}
+	}
+	return a;
+}
+
+
+map[&T,int] incK(map[&T,int] m, &T k, int by) {
+	m[k] = m[k] + by;
+	return m;
+}
