@@ -11,7 +11,6 @@ import Set;
 import util::Math;
 
 import smells::DisconnectedNonterminalGraph;
-import smells::UpDownReferences;
 import smells::ProxyNonterminals;
 import smells::NamingConvention;
 import smells::FakeOneOrMore;
@@ -26,6 +25,8 @@ import smells::ProxyNonterminals;
 import smells::ReferenceDistance;
 import smells::ScatteredNonterminalProductionRules;
 import smells::SingleListThingy;
+import smells::SmallAbstractions;
+import smells::UpDownReferences;
 
 import Violations;
 import GrammarInformation;
@@ -66,6 +67,7 @@ set[Violation] smellsInGrammar(gInfo) =
 	+ smells::ReferenceDistance::violations(gInfo)
 	+ smells::ScatteredNonterminalProductionRules::violations(gInfo)
 	+ smells::SingleListThingy::violations(gInfo)
+	+ smells::SmallAbstractions::violations(gInfo)
 	+ smells::UpDownReferences::violations(gInfo)
 	;
 
