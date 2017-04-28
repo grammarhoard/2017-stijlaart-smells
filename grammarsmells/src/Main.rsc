@@ -27,6 +27,7 @@ import smells::ReferenceDistance;
 import smells::ScatteredNonterminalProductionRules;
 import smells::SingleListThingy;
 
+import Violations;
 import GrammarInformation;
 
 void run() {
@@ -34,25 +35,32 @@ void run() {
 		
 	for (loc y <- drop(0, x)) {
 		GGrammar theGrammar = readBGF(y);
-		iprintln(y);
+		//iprintln(y);
 		grammar(n,p,s) = theGrammar;
 		
 		GrammarInfo gInfo = GrammarInformation::build(theGrammar);
+		set[Violation] vs = smellsInGrammar(gInfo);
 		
-		smells::DisconnectedNonterminalGraph::violations(gInfo);
-		smells::Duplication::violations(gInfo);
-		smells::EntryPoint::violations(gInfo);
-		smells::FakeZeroOrMore::violations(gInfo);
-		smells::FakeOneOrMore::violations(gInfo);
-		smells::ImproperResponsibility::violations(gInfo);
-		smells::LegacyStructures::violations(gInfo);
-		smells::MixedDefinitions::violations(gInfo);
-		smells::MixedTop::violations(gInfo);
-		smells::ProxyNonterminals::violations(gInfo);
-		smells::ReferenceDistance::violations(gInfo);
-		smells::ReferenceDistance::referenceDistances(gInfo);
-		smells::ScatteredNonterminalProductionRules::violations(gInfo);
-		smells::SingleListThingy::violations(gInfo);
-		smells::UpDownReferences::violations(gInfo);
+		println("<size(vs)>\t<y>");
+		//iprintln(vs);
+		//return;
 	}
 }
+
+set[Violation] smellsInGrammar(gInfo) =
+	   smells::DisconnectedNonterminalGraph::violations(gInfo)
+	+ smells::Duplication::violations(gInfo)
+	+ smells::EntryPoint::violations(gInfo)
+	+ smells::FakeZeroOrMore::violations(gInfo)
+	+ smells::FakeOneOrMore::violations(gInfo)
+	+ smells::ImproperResponsibility::violations(gInfo)
+	+ smells::LegacyStructures::violations(gInfo)
+	+ smells::MixedDefinitions::violations(gInfo)
+	+ smells::MixedTop::violations(gInfo)
+	+ smells::ProxyNonterminals::violations(gInfo)
+	+ smells::ReferenceDistance::violations(gInfo)
+	+ smells::ScatteredNonterminalProductionRules::violations(gInfo)
+	+ smells::SingleListThingy::violations(gInfo)
+	+ smells::UpDownReferences::violations(gInfo)
+	;
+
