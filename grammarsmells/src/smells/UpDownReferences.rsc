@@ -16,7 +16,7 @@ alias ProdReferences = tuple[GProd p, int up, int down];
 data ReferenceDir
 	= upReferencing()
 	| downReferencing()
-	| balanced()
+	| evenReferencing()
 	;
 	
 tuple[int,int] addReferences(<xUp, xDown> , <_, yUp, yDown>) =
@@ -98,11 +98,10 @@ ReferenceInfo getReferenceInfo(grammarInfo(g:grammar(_, ps, _), grammarData(_, n
 		referenceInfo(
 			  up
 			, down
-			, up == down ? balanced() : (up < down ? downReferencing() : upReferencing())
+			, up == down ? evenReferencing() : (up < down ? downReferencing() : upReferencing())
 			, ratio
 		);
 } 
-
 
 ProdReferences prodReference(map[str, set[GProd]] nprods, GGrammar theGrammar:grammar(_,ps,_), GProd p) {
 	production(lhs, rhs) = p;
