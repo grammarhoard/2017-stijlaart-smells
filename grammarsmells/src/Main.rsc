@@ -30,21 +30,26 @@ import smells::SingleListThingy;
 import Violations;
 import GrammarInformation;
 
+alias GrammarAnalysis = tuple[loc l, GrammarInfo gInfo, set[Violation] violations];
+
 void run() {
-	x = Input::extractedGrammarLocationsInDir(|project://grammarsmells/input/zoo|);
+	inputFiles = Input::extractedGrammarLocationsInDir(|project://grammarsmells/input/zoo|);
 		
-	for (loc y <- drop(0, x)) {
-		GGrammar theGrammar = readBGF(y);
-		//iprintln(y);
-		grammar(n,p,s) = theGrammar;
-		
-		GrammarInfo gInfo = GrammarInformation::build(theGrammar);
+	list[GrammarAnalysis] result = [];
+	result = for (loc y <- take(10,drop(0, inputFiles))) {
+		iprintln("Analysing <y>...");
+		GrammarInfo gInfo = GrammarInformation::build(y);
 		set[Violation] vs = smellsInGrammar(gInfo);
-		
-		println("<size(vs)>\t<y>");
-		//iprintln(vs);
-		//return;
+		append <y, gInfo, vs>;
+		//println("<size(vs)>\t<y>");
 	}
+	for (<l,g,vs> <- result) {
+		list[str] proxies = [ n | v <- vs , <violatingNonterminal(n),redirectingNonterminal()> := v];
+		//iprintln(proxies);
+		grammarInfo(grammar(ns, _, _), _, _) = g;
+		println("<size(proxies)> / <size(toSet(ns))>\t(<size(proxies) / 1.0 / size(toSet(ns))>)\t | <l>"); 
+	}
+	//iprintln(size({ l | <l, g, v> <- result, /proxyNonterminal() := v }));
 }
 
 set[Violation] smellsInGrammar(gInfo) =

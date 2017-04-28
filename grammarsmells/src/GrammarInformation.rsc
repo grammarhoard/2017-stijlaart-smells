@@ -1,5 +1,6 @@
 module GrammarInformation
 
+import grammarlab::io::read::BGF;
 import grammarlab::language::Grammar;
 import GrammarUtils;
 import Set;
@@ -50,7 +51,9 @@ bool containsOptionalFact(grammarData(_,_,index,_,_))
 		 , optional(_) := l
 		 );
 	
-GrammarInfo build(GGrammar theGrammar) {
+GrammarInfo build(loc l) {
+	GGrammar theGrammar = readBGF(l);
+		
 	map[str, set[GProd]] nprods = nonterminalProdMap(theGrammar);
 
 	GrammarData d = grammarData(
