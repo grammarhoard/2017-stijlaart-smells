@@ -9,11 +9,11 @@ import Map;
 import Relation;
 import Map::Extra;
 import List;
+import Violations;
 
-
-list[GProd] violations(grammarInfo(grammar(_,ps,_), grammarData(_, _, _, _, _), _)) =
-	[ p
+set[Violation] violations(grammarInfo(grammar(_,ps,_), grammarData(_, _, _, _, _), _)) =
+	{ <violatingProduction(p), singleListThingy(e)>
 	| p <- ps
 	, production(lhs, rhs) := p
-	, /sequence([_]) := rhs || /choice([_]) := rhs
-	];
+	, /e:sequence([_]) := rhs || /e:choice([_]) := rhs
+	};

@@ -9,6 +9,7 @@ import Map;
 import Map::Extra;
 import List;
 import GrammarInformation;
+import Violations;
 
 data DefinitionDirection
 	= horizontal(str s)
@@ -17,6 +18,9 @@ data DefinitionDirection
 	| undecided(str s)
 	;
 
+
+set[Violation] violations(GrammarInfo info) =
+	{ <violatingNonterminal(y),mixedDefinition()> | x <- definitionStyles(info), zigZag(y) := x};
 
 set[DefinitionDirection] definitionStyles(grammarInfo(grammar(ns,_,_), grammarData(_, nprods, _,_,_), _)) {
 	set[str] horizontals = { k | k <- nprods, anyHorizontal(nprods[k])};
@@ -29,10 +33,6 @@ set[DefinitionDirection] definitionStyles(grammarInfo(grammar(ns,_,_), grammarDa
 		 + { undecided(s) | s <- (ns - horizontals - verticals) }
 		 ;
 }
-
-set[str] violations(GrammarInfo info) =
-	{ y | x <- definitionStyles(info), zigZag(y) := x};
-
 
 bool anyHorizontal(set[GProd] items) =
 	any(i <- items, horizontal(i));

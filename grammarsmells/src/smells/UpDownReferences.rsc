@@ -6,6 +6,7 @@ import List;
 import Set;
 import IO;
 import util::Math;
+import Violations;
 
 data ReferenceInfo =
  referenceInfo(int up, int down, ReferenceDir dir, real ratio);
@@ -21,14 +22,14 @@ data ReferenceDir
 tuple[int,int] addReferences(<xUp, xDown> , <_, yUp, yDown>) =
 	 <xUp + yUp, xDown + yDown>;
 
-set[GProd] violations(info:grammarInfo(g:grammar(_, ps, _), grammarData(_, nprods, expressionIndex, tops, _), _)) {
+set[Violation] violations(info:grammarInfo(g:grammar(_, ps, _), grammarData(_, nprods, expressionIndex, tops, _), _)) {
 	ReferenceInfo prodR = getReferenceInfo(info);
 	
 	set[GProd] upAndDowns = { p | p <- ps, <_,up, down> := prodReference(nprods, g, p), up > 0 && down > 0};
 	
 	//TODO Bring back
 	//set[GProd] violations = { p | p <- upAndDowns, canMutateToReduceRatio(info, prodR, p) };
-	set[GProd] violations = {};
+	set[Violation] violations = {};
 //	set[set[str]] levels = languageLevels(g);
 //
 //	list[list[GProd]] groupedByLevel = groupProductionsByLevel(ps, levels);

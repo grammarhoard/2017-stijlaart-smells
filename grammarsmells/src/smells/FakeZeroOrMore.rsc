@@ -9,10 +9,11 @@ import List;
 import Set;
 import Relation;
 import Facts;
+import Violations;
 
-set[GExpr] violations(grammarInfo(g, grammarData(_, _, expressionIndex,_,_), facts)) =
+set[Violation] violations(grammarInfo(g, grammarData(_, _, expressionIndex,_,_), facts)) =
 	facts[containsStar()]
-	? { l 
+	? { <violatingExpression(l), fakeZeroOrMore()> 
 	  | k <- expressionIndex
 	  , fullExpr(l) := k
 	  , optional(plus(_)) := l

@@ -7,9 +7,10 @@ import IO;
 import Map;
 import Map::Extra;
 import List;
+import Violations;
 
-set[GExpr] violations(grammarInfo(g, grammarData(_, nprods, expressionIndex,_,_), _)) =	
-	{ c
+set[Violation] violations(grammarInfo(g, grammarData(_, nprods, expressionIndex,_,_), _)) =	
+	{ <violatingExpression(c), improperResponsibility()>
 	| k <- expressionIndex
 	, fullExpr(c) := k, choice(xs) := c
 	, size(toSet(allHeads(nprods, xs, g))) == 1

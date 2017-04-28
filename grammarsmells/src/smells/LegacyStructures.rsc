@@ -8,21 +8,16 @@ import IO;
 import Map;
 import Map::Extra;
 import List;
-
-data LegacyUsage
-	= legacyOptional(str n)
-	| legacyPlus(str n)
-	| legacyStar(str n)
-	;
+import Violations;
 	
-set[LegacyUsage] violations(GrammarInfo info) =
-	  { legacyOptional(n)
+set[Violation] violations(GrammarInfo info) =
+	  { <violatingNonterminal(n), legacyUsage(legacyOptional(n))>
 	  | n <- legacyOptionalViolations(info)
 	  } 
-	+ { legacyPlus(n)
+	+ { <violatingNonterminal(n), legacyUsage(legacyPlus(n))>
 	  | n <- legacyIterationPlusViolations(info)
 	  }
-    + { legacyStar(n)
+    + { <violatingNonterminal(n), legacyUsage(legacyStar(n))>
 	  | n <- legacyIterationStarViolations(info)
 	  }
 	  ;

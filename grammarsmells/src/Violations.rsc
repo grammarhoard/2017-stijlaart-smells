@@ -19,6 +19,21 @@ data ViolationReason
 	| commonSubExpression(GExpr e)
 	| unclearEntryPoint()
 	| fakeOneOrMore(GExpr e1, GExpr e2, GExpr e3)
+	| fakeZeroOrMore()
+	| improperResponsibility()
+	| legacyUsage(LegacyUsage u)
+	| mixedDefinition()
+	| mixedTops()
+	| proxyNonterminal()
+	| referenceDistanceJumpOver(GProd a, GProd b, GProd c)
+	| scatteredNonterminal()
+	| singleListThingy(GExpr e)
+	;
+	
+data LegacyUsage
+	= legacyOptional(str n)
+	| legacyPlus(str n)
+	| legacyStar(str n)
 	;
 	
 alias Violation = tuple[ViolationLocation, ViolationReason];

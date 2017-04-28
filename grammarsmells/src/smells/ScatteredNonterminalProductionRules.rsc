@@ -8,10 +8,10 @@ import Map;
 import Relation;
 import Map::Extra;
 import List;
+import Violations;
 
-
-set[str] violations(grammarInfo(grammar(ns,ps,_), grammarData(r, nprods, _, _, _), _)) =
-	{ n
+set[Violation] violations(grammarInfo(grammar(ns,ps,_), grammarData(r, nprods, _, _, _), _)) =
+	{ <violatingNonterminal(n), scatteredNonterminal()>
 	| n <- ns
 	, isScattered(ps, nprods[n])
 	};
