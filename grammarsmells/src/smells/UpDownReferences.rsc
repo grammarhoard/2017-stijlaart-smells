@@ -22,28 +22,27 @@ data ReferenceDir
 tuple[int,int] addReferences(<xUp, xDown> , <_, yUp, yDown>) =
 	 <xUp + yUp, xDown + yDown>;
 
-set[Violation] violations(info:grammarInfo(g:grammar(_, ps, _), grammarData(_, nprods, expressionIndex, tops, _), _)) {
+set[Violation] violations(info:grammarInfo(g:grammar(_, ps, _), grammarData(refs, nprods, expressionIndex, tops, _), _)) {
 	ReferenceInfo prodR = getReferenceInfo(info);
-	
+	referenceInfo(up,down ,dir,ratio) = prodR;
+
 	set[GProd] upAndDowns = { p | p <- ps, <_,up, down> := prodReference(nprods, g, p), up > 0 && down > 0};
 	
-	//TODO Bring back
-	//set[GProd] violations = { p | p <- upAndDowns, canMutateToReduceRatio(info, prodR, p) };
-	set[Violation] violations = {};
-//	set[set[str]] levels = languageLevels(g);
-//
-//	list[list[GProd]] groupedByLevel = groupProductionsByLevel(ps, levels);
-//	list[set[str]] groupedByLevelNs = [ { lhs | production(lhs,_) <- group } | group <- groupedByLevel ];
-//	
-//	for ( [_*, a, _*, b, _*, c, _*] := groupedByLevelNs) {
-//		set[str] aLevel = levelFor(a, levels);
-//		set[str] bLevel = levelFor(b, levels);
-//		set[str] cLevel = levelFor(c, levels);
-//		if (aLevel == cLevel && aLevel != bLevel) {
-//			iprintln("Violation <a> <b> <c>");
-//		}
-//	}
-	return violations;
+	int(int) f = (dir == upReferencing()) ? (int(int x) { return -x; }) : (int(int x) { return x * 1; });
+	iprintln(f(1));
+	rel[str,str] r = refs+;
+	
+	set[GProd] V = 
+		{ p | p:production(x,y) <- ps
+		, any
+			( q:production(z,a) <- ps
+			, f(indexOf(ps, p)) < f(indexOf(ps,q))
+			, <z,x> in r
+			, <x,z> notin r
+			)
+		};
+	
+	return { <violatingProduction(p),counterDirectionReferencedProduction()> | p <- V };
 }
 
 set[str] levelFor(set[str] items, set[set[str]] levels) = 

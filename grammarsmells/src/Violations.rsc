@@ -29,6 +29,7 @@ data ViolationReason
 	| referenceDistanceJumpOver(GProd a, GProd b, GProd c)
 	| scatteredNonterminal()
 	| singleListThingy(GExpr e)
+	| counterDirectionReferencedProduction()
 	;
 	
 data LegacyUsage

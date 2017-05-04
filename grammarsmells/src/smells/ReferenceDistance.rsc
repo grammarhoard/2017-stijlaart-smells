@@ -12,6 +12,8 @@ alias ReferenceDistanceInfo =
 	tuple[lrel[GProd,int],int]
 	;
 
+//TODO Test on |project://grammarsmells/input/zoo/automata/petri/pnml/standard/terms/extracted/grammar.bgf| (first, second and third) `Declaration.content`.
+
 set[Violation] violations(grammarInfo(g:grammar(_,ps,_), grammarData(r, _, expressionIndex, tops, _), _)) {
 	list[str] l = orderedLhs(g);
 	rel[str,str] rPlus = r+;

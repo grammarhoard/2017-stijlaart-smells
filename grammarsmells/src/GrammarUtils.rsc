@@ -6,7 +6,7 @@ import Set;
 import Relation;
 import Map::Extra;
 import List;
-
+import Map;
 data ExpressionOccurence
 	= fullExpr(GExpr expr2)
 	| partialExpr(list[GExpr] exprs)
@@ -18,17 +18,17 @@ data ExpressionOccurenceLocation
 	| occurencePartial(GProd p)
 	;
 	
-map[ExpressionOccurence, set[ExpressionOccurenceLocation]] buildExpressionIndex(grammar(_,ps,_)) =
+map[ExpressionOccurence, list[ExpressionOccurenceLocation]] buildExpressionIndex(grammar(_,ps,_)) =
 	( () | registerExpressionsForProd(it, prod) | prod <- ps);	
 
-map[ExpressionOccurence, set[ExpressionOccurenceLocation]] registerExpressionsForProd(map[ExpressionOccurence, set[ExpressionOccurenceLocation]] index, production(lhs, expr)) {
-	index = addItemToValueSet(index, fullExpr(expr), occurenceRule(production(lhs, expr)));
+map[ExpressionOccurence, list[ExpressionOccurenceLocation]] registerExpressionsForProd(map[ExpressionOccurence, list[ExpressionOccurenceLocation]] index, production(lhs, expr)) {
+	index = addItemToValueList(index, fullExpr(expr), occurenceRule(production(lhs, expr)));
 	
 	int counter = 0;
 	visit (expr) {
 		case GExpr v: { 
 			if (!(v == expr) ) {
-				index = addItemToValueSet(index, fullExpr(v), occurenceSubExpr(production(lhs, expr)));
+				index = addItemToValueList(index, fullExpr(v), occurenceSubExpr(production(lhs, expr)));
 				counter += 1;
 			}
 		}

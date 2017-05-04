@@ -7,6 +7,7 @@ import IO;
 import Map;
 import Map::Extra;
 import Violations;
+import List;
 
 bool isNonterminal(ExpressionOccurence x) {
 	if (fullExpr(nonterminal(_)) := x) {
@@ -28,12 +29,12 @@ bool isTerminal(ExpressionOccurence x) {
 	}
 }
 
-set[set[GProd]] duplicateProductionRules(map[ExpressionOccurence, set[ExpressionOccurenceLocation]] index) {
+set[set[GProd]] duplicateProductionRules(map[ExpressionOccurence, list[ExpressionOccurenceLocation]] index) {
 	return { l | k <- index, fullExpr(_) := k, l := { v | occurenceRule(v) <- index[k]}, size(l) > 1 };
 }
 
 
-rel[GExpr, GProd, GProd] knownSubexpression(map[ExpressionOccurence, set[ExpressionOccurenceLocation]] index) = 
+rel[GExpr, GProd, GProd] knownSubexpression(map[ExpressionOccurence, list[ExpressionOccurenceLocation]] index) = 
 	( {}
 	| it + 
 		{ <l, s, r> 
@@ -47,7 +48,7 @@ rel[GExpr, GProd, GProd] knownSubexpression(map[ExpressionOccurence, set[Express
 	, fullExpr(l) := k
 	, nonterminal(_) !:= l);
 
-rel[GExpr, set[GProd]] commonSubexpressions(map[ExpressionOccurence, set[ExpressionOccurenceLocation]] index) {
+rel[GExpr, set[GProd]] commonSubexpressions(map[ExpressionOccurence, list[ExpressionOccurenceLocation]] index) {
 	set[tuple[GExpr, GProd, GProd]] triples =
 		( {}
 		| it + 

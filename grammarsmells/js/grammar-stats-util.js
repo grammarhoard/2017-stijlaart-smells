@@ -1,7 +1,8 @@
-const gramarSizeMap =
+const indexedStats = {}
+require('../output/grammar-stats.json').forEach(item => indexedStats[item.location] = item);
 
 module.exports = {
-    locToSize : function(x) {
-
+    statForFile : function(x) {
+        return indexedStats[x];
     }
 };

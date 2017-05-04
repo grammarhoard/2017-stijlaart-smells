@@ -4,8 +4,11 @@ import grammarlab::io::read::BGF;
 import grammarlab::language::Grammar;
 import GrammarUtils;
 import Set;
+import IO;
+import Map;
 
-alias ExpressionIndex = map[ExpressionOccurence, set[ExpressionOccurenceLocation]];
+//TODO: Shouldt this be a list[T] as map value type?
+alias ExpressionIndex = map[ExpressionOccurence, list[ExpressionOccurenceLocation]];
 alias Facts = map[FactProperty, bool];
 
 data GrammarData
@@ -23,6 +26,9 @@ data FactProperty
 	= containsStar()
 	| containsPlus()
 	| containsOptional()
+	| containsChoice()
+	| containsSequence()
+	| containsEpsilon()
 	;
 	
 data GrammarInfo
@@ -35,20 +41,32 @@ data GrammarInfo
 
 bool containsStarFact(grammarData(_,_,index,_,_))
 	= any( k <- index
-		 , fullExpr(l) := k
-		 , star(_) := l
+		 , fullExpr(star(_)) := k
 		 );
 
-bool containsPlusFact(grammarData(_,_,index,_,_))
+bool containsPlusFact(grammarData(_,_,index,_,_)) 
 	= any( k <- index
-		 , fullExpr(l) := k
-		 , plus(_) := l
+		 , fullExpr(plus(_)) := k
 		 );
 
 bool containsOptionalFact(grammarData(_,_,index,_,_))
 	= any( k <- index
-		 , fullExpr(l) := k
-		 , optional(_) := l
+		 , fullExpr(optional(_)) := k
+		 );
+		 
+bool containsChoiceFact(grammarData(_,_,index,_,_))
+	= any( k <- index
+		 , fullExpr(choice(_)) := k 		 
+		 );
+
+bool containsSequenceFact(grammarData(_,_,index,_,_))
+	= any( k <- index
+		 , fullExpr(sequence(_)) := k
+		 );
+		 
+ bool containsEpsilonFact(grammarData(_,_,index,_,_))
+	= any( k <- index
+		 , fullExpr(epsilon()) := k
 		 );
 	
 GrammarInfo build(loc l) {
@@ -64,13 +82,17 @@ GrammarInfo build(loc l) {
 		grammarBottoms(theGrammar)
 	);
 	
+	facts =( containsStar() : containsStarFact(d)
+		, containsPlus() : containsPlusFact(d)
+		, containsOptional() : containsOptionalFact(d)
+		, containsChoice() : containsChoiceFact(d)
+		, containsSequence() : containsSequenceFact(d)
+		, containsEpsilon() : containsEpsilonFact(d)
+		);
 	return grammarInfo(
 		theGrammar,
 		d,
-		( containsStar() : containsStarFact(d)
-		, containsPlus() : containsPlusFact(d)
-		, containsOptional() : containsOptionalFact(d)
-		)
+		facts
 	);
 }
 
