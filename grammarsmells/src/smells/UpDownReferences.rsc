@@ -7,6 +7,7 @@ import Set;
 import IO;
 import util::Math;
 import Violations;
+import GrammarInformation;
 
 data ReferenceInfo =
  referenceInfo(int up, int down, ReferenceDir dir, real ratio);
@@ -22,29 +23,52 @@ data ReferenceDir
 tuple[int,int] addReferences(<xUp, xDown> , <_, yUp, yDown>) =
 	 <xUp + yUp, xDown + yDown>;
 
-set[Violation] violations(info:grammarInfo(g:grammar(_, ps, _), grammarData(refs, nprods, expressionIndex, tops, _), _)) {
+set[Violation] violations(info:grammarInfo(g:grammar(_, ps, _), gd:grammarData(refs, nprods, expressionIndex, tops, _), _)) {
 	ReferenceInfo prodR = getReferenceInfo(info);
 	referenceInfo(up,down ,dir,ratio) = prodR;
-
-	set[GProd] upAndDowns = { p | p <- ps, <_,up, down> := prodReference(nprods, g, p), up > 0 && down > 0};
-	
 	int(int) f = (dir == upReferencing()) ? (int(int x) { return -x; }) : (int(int x) { return x * 1; });
-	iprintln(f(1));
+	
 	rel[str,str] r = refs+;
 	
-	set[GProd] V = 
-		{ p | p:production(x,y) <- ps
-		, any
-			( q:production(z,a) <- ps
-			, f(indexOf(ps, p)) < f(indexOf(ps,q))
-			, <z,x> in r
-			, <x,z> notin r
-			)
-		};
+	iprintln(gd@levels);
+	//set[GProd] V = 
+	//	{ p | p:production(x,y) <- ps
+	//	, any
+	//		( q:production(z,a) <- ps
+	//		, f(indexOf(ps, p)) < f(indexOf(ps,q))
+	//		, <z,x> in r
+	//		, <x,z> notin r
+	//		)
+	//	};
+	V = {};
 	
-	return { <violatingProduction(p),counterDirectionReferencedProduction()> | p <- V };
+	return 
+		{ < violatingProduction(p)
+		  ,counterDirectionReferencedProduction()
+		  > 
+		| p <- V };
 }
 
+GGrammar resolve(info:grammarInfo(g:grammar(ns, ps, ss), grammarData(refs, nprods, expressionIndex, tops, _), _), Violation v) {
+	ReferenceInfo prodR = getReferenceInfo(info);
+	referenceInfo(up,down ,dir,ratio) = prodR;
+	int(int) f = (dir == upReferencing()) ? (int(int x) { return -x; }) : (int(int x) { return x * 1; });
+	rel[str,str] r = refs+;
+	
+	if (<violatingProduction(p),counterDirectionReferencedProduction()> := v) {
+		production(x,y) = p;
+		GProd bar = getOneFrom({ q | q:production(z,a) <- ps, f(indexOf(ps, p)) < f(indexOf(ps,q))
+			, <z,x> in r
+			, <x,z> notin r
+			});
+			
+		int insertIndex = indexOf(ps, bar);
+		int deleteIndex = indexOf(ps, p);
+		newPs = insertAt(delete(ps, deleteIndex), insertIndex, p);
+		return grammar(ns, newPs, ss);
+	}
+	return g;
+}
 set[str] levelFor(set[str] items, set[set[str]] levels) = 
 	getOneFrom({ level | level <- levels, items <= level })
 	; 

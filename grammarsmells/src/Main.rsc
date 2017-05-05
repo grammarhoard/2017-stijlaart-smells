@@ -33,6 +33,8 @@ import smells::UpDownReferences;
 import output::MixedDefinitions;
 import output::UpDownReferences;
 
+import grammarlab::export::Grammar;
+
 import Violations;
 import GrammarInformation;
 import Map::Extra;
@@ -42,18 +44,38 @@ alias GrammarAnalysis = tuple[loc l, GrammarInfo gInfo, set[Violation] violation
 
 lrel[loc, GrammarInfo] getInputFiles() {
 	list[loc] inputFiles = Input::extractedGrammarLocationsInDir(|project://grammarsmells/input/zoo|);
-	//inputFiles = take(1, drop(0, inputFiles));
+	inputFiles = take(1, drop(2, inputFiles));
 	println("Loading grammar info for locations");
 	pairs = for (l <- inputFiles) {
 		println("Loading <l>... ");
 		append <l,GrammarInformation::build(l)>;
 	}
+	
 	return
 		[ <l, i>
 		| <l,i> <- pairs
 		, grammarInfo(grammar(ns,_,_),_,_) := i
 		, size(ns) > 0
 		];
+}
+
+void optimizeUpDownReferencion() {
+	lrel[loc, GrammarInfo] is = getInputFiles();
+	
+	for (<l,gInfo> <- is) {
+		GGrammar g = gInfo.g;
+		//println(grammarlab::export::Grammar::ppx(g));
+		ReferenceInfo before = smells::UpDownReferences::getReferenceInfo(gInfo);		
+		println(before);
+		
+		while(vs := smells::UpDownReferences::violations(gInfo), size(vs) > 0) {
+			Violation v = getOneFrom(vs);		
+			gInfo.g = smells::UpDownReferences::resolve(gInfo, v);
+			println(getReferenceInfo(gInfo));
+		}
+		
+		return;
+	}
 }
 
 void export() {

@@ -4,7 +4,6 @@ const _ = require('lodash');
 
 const data = Object.keys(redirectingData).map(k => {
     const stat = grammarStatsUtil.statForFile(k);
-    console.log(redirectingData[k]);
     return {
         ns: stat.nonterminals,
         violations: redirectingData[k],

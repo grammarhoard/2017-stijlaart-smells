@@ -8,7 +8,6 @@ const {groupByF} = require('./base.js');
 const within = (low, high) => x => low <= x && x <= high;
 
 const nonterminalSizePreds = {
-    '0': within(0,0),
     '1-10': within(1,10),
     '11-25': within(11,25),
     '26-50': within(26,50),
@@ -49,12 +48,19 @@ allGroups.forEach(group => {
     console.log(_.mapValues(grouped, x => x.length));
 });
 
+
+
 console.log("> Reference group percentage");
-allGroups.forEach(group => {
+const percentageGroupRows = allGroups.map(group => {
     const filtered = referenceInfo.filter(x => locGroupDict[x.location] == group);
     const grouped =  _.groupBy(filtered, 'dir');
     const total = _.sum(_.values(_.mapValues(grouped, 'length')));
     const percentages = _.mapValues(_.mapValues(grouped, x => x.length / total), x => x.toFixed(2))
 
     console.log(percentages.UP ,"|", percentages.EVEN || 0.00,"|", percentages.DOWN);
+
+    return [ group, percentages.UP , percentages.EVEN || 0.00, percentages.DOWN ];
 });
+
+const x = require('./latex-table')(["Group", "Up", "Even","Down"], percentageGroupRows);
+console.log(x);

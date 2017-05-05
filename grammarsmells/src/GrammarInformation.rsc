@@ -38,6 +38,8 @@ data GrammarInfo
 		Facts facts
 	  );
 
+anno LanguageLevels GrammarData @ levels;
+
 
 bool containsStarFact(grammarData(_,_,index,_,_))
 	= any( k <- index
@@ -64,23 +66,34 @@ bool containsSequenceFact(grammarData(_,_,index,_,_))
 		 , fullExpr(sequence(_)) := k
 		 );
 		 
- bool containsEpsilonFact(grammarData(_,_,index,_,_))
+bool containsEpsilonFact(grammarData(_,_,index,_,_))
 	= any( k <- index
 		 , fullExpr(epsilon()) := k
 		 );
+	
+
+data LanguageLevels =
+	languageLevels(set[set[str]] partitions, rel[set[str],set[str]] partitionRel);
 	
 GrammarInfo build(loc l) {
 	GGrammar theGrammar = grammarlab::io::read::BGF::readBGF(l);
 		
 	map[str, set[GProd]] nprods = nonterminalProdMap(theGrammar);
-
+	rel[str,str] refs = nonterminalReferencesWithProdMap(theGrammar, nprods);
+	set[set[str]] partitions = partitionForTransitiveClosure(refs);
+	rel[set[str],set[str]] partitionRel = { <x,y> | x <- partitions, y <- partitions, any(m <- x, n <- y, <m,n> in refs)};
+	
+	LanguageLevels ll = languageLevels(partitions, partitionRel);
+	 
 	GrammarData d = grammarData(
-		nonterminalReferencesWithProdMap(theGrammar, nprods),
+		refs,
 		nprods,
 		buildExpressionIndex(theGrammar),
 		grammarTops(theGrammar),
 		grammarBottoms(theGrammar)
 	);
+	
+	d@levels = ll;
 	
 	facts =( containsStar() : containsStarFact(d)
 		, containsPlus() : containsPlusFact(d)
